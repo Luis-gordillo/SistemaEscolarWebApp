@@ -1,0 +1,158 @@
+.wrapper {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: #ffffff;
+}
+
+.section-registro {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.header-registro {
+  width: 100vw;
+  height: 10vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.body-registro {
+  width: 50vw;
+  min-width: 350px;
+  max-width: 700px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  padding-top: 2rem;
+  gap: 1.5rem;
+  margin: 0 auto;
+}
+
+.title-user {
+  font-size: 28px;
+  text-align: center;
+  font-family: Nexa-Bold, Arial, sans-serif;
+  letter-spacing: 2px;
+  color: #231f20;
+  text-transform: uppercase;
+  opacity: 1;
+  margin-bottom: 1.5rem;
+}
+
+mat-form-field {
+  width: 100% !important;
+  min-height: 48px;
+  text-align: left !important;
+}
+
+//Para la sección de botones
+.section-buttons {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 3rem;
+}
+
+.btn-primary,
+.btn-danger {
+  width: 208px;
+  height: 48px;
+  border-radius: 8px !important;
+  text-align: center;
+  font-family: Nexa-Bold, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 0px;
+  color: #ffffff;
+  opacity: 1;
+}
+
+.btn-primary {
+  background-color: #0092b8 !important;
+  border-color: #0092b8 !important;
+}
+
+.btn-primary:hover {
+  background-color: #017895 !important;
+  border-color: #017895 !important;
+}
+
+.btn-danger {
+  background-color: #d9534f !important;
+  border-color: #d9534f !important;
+}
+
+.mat-hint-margin {
+  margin-bottom: 1rem;
+}
+
+.img-slider {
+  width: 900px;
+  height: 630px;
+}
+
+.container {
+  width: 50vw;
+}
+
+.invalid-feedback {
+  color: #d9534f;
+  font-size: 0.95rem;
+  margin-top: -1rem;
+  margin-bottom: 1rem;
+}
+
+.select-publico {
+  margin-bottom: 1rem;
+
+  .checkbox-group {
+    margin-bottom: 0.5rem;
+  }
+
+  .d-checkbox-nombre {
+    margin-left: 0.5rem;
+    font-family: Nexa, Arial, sans-serif;
+    font-size: 16px;
+  }
+}
+
+// Angular Material radio button custom styles
+::ng-deep .mat-mdc-radio-button .mdc-form-field {
+  color: #231f20;
+  font-family: Nexa, Arial, sans-serif;
+  font-size: 20px;
+}
+
+::ng-deep .mat-mdc-radio-button.mat-accent {
+  --mdc-radio-selected-focus-icon-color: #0092b8;
+  --mdc-radio-selected-hover-icon-color: #0092b8;
+  --mdc-radio-selected-icon-color: #0092b8;
+  --mdc-radio-selected-pressed-icon-color: #0092b8;
+  --mat-radio-ripple-color: #000;
+  --mat-radio-checked-ripple-color: #0092b8;
+}
+
+::ng-deep .mdc-radio {
+  display: inline-block;
+  position: relative;
+  flex: 0 0 auto;
+  box-sizing: content-box;
+  width: 20px;
+  height: 28px !important;
+  cursor: pointer;
+  will-change: opacity, transform, border-color, color;
+}

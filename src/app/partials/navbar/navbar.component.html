@@ -1,0 +1,92 @@
+<div class="wrapper">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+              data-bs-target="#navbarSupportedContent" 
+              aria-controls="navbarSupportedContent" aria-expanded="false" 
+              aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <!-- Se muestran las opciones generales solo si no estamos en registro de usuarios o eventos -->
+        <ng-container *ngIf="tipo !== 'registro-usuarios' && tipo !== 'registro-eventos'; else registroTemplate">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" id="principal" aria-current="page" (click)="clickNavLink('home')">Inicio</a>
+            </li>
+            <li class="nav-item" *ngIf="rol !== 'alumno'">
+              <a class="nav-link" id="alumno" aria-current="page" (click)="clickNavLink('alumnos')">Alumnos</a>
+            </li>
+            <li class="nav-item" *ngIf="rol !== 'maestro' && rol !== 'alumno'">
+              <a class="nav-link" id="maestro" (click)="clickNavLink('maestros')">Maestros</a>
+            </li>
+           <!-- <li class="nav-item" *ngIf="rol !== 'alumno'">
+              <a class="nav-link" id="admin" (click)="clickNavLink('admins')">Administradores</a>
+            </li>-->
+                <!-- Nav de Eventos: visible para todos los roles -->
+             <li class="nav-item">
+               <a class="nav-link" id="evento" (click)="clickNavLink('eventos')">Eventos</a>
+              </li>
+
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" 
+                 data-bs-toggle="dropdown" aria-expanded="false">
+                Registrar
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li>
+                  <a class="dropdown-item" (click)="goRegistro()" *ngIf="rol !== 'alumno'">Alumnos</a>
+                </li>
+                <li>
+                  <a class="dropdown-item" (click)="goRegistro()" *ngIf="rol !== 'maestro' && rol !== 'alumno'">Maestros</a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+                <li>
+                  <a class="dropdown-item" routerLink="/registro-eventos">Eventos</a>
+                </li>              
+              </ul>
+            </li>
+          </ul>
+        </ng-container>
+
+        <!-- Template para las páginas de registro -->
+        <ng-template #registroTemplate>
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <!-- Muestra el título de registro según el tipo y el modo -->
+              <label class="navbar-brand" *ngIf="!editar">
+                {{ tipo === 'registro-usuarios' ? 
+                    'Registro de usuarios del sistema' : 
+                    'Registro de eventos del sistema' }}
+              </label>
+              <label class="navbar-brand" *ngIf="editar">
+                {{ tipo === 'registro-usuarios' ? 
+                    'Editar usuario del sistema' : 
+                    'Editar evento del sistema' }}
+              </label>
+            </li>
+          </ul>
+        </ng-template>
+
+        <!-- Menú en el lado derecho -->
+        <form class="d-flex">
+          <div class="dropdown">
+            <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-person-circle"></i>
+            </button>
+            <ul class="dropdown-menu">
+              <li *ngIf="token != ''">
+                <a class="dropdown-item" (click)="logout()">Cerrar Sesión</a>
+              </li>
+              <li *ngIf="(tipo === 'registro-usuarios' || tipo === 'registro-eventos') && token == ''">
+                <a class="dropdown-item" href="#">Iniciar Sesión</a>
+              </li>
+            </ul>
+          </div>
+        </form>
+      </div>
+    </div>
+  </nav>
+</div>
