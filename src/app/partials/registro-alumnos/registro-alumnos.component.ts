@@ -1,8 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlumnoService } from 'src/app/services/alumnos.service'; // Servicio del alumno
+import { AlumnoService } from 'src/app/services/alumnos.service';
 declare var $: any;
-import { ActivatedRoute } from '@angular/router'; // Para obtener parámetros de la ruta
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-registro-alumnos',
@@ -26,9 +26,9 @@ export class RegistroAlumnosComponent implements OnInit {
   public inputType_2: string = 'password';
 
   constructor(
-    private alumnoService: AlumnoService, // Inyectamos el servicio para alumnos
-    private router: Router, // Para navegar entre rutas
-    private activatedRoute: ActivatedRoute, // Para obtener parámetros de la ruta
+    private alumnoService: AlumnoService,
+    private router: Router,
+    private activatedRoute: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
@@ -36,15 +36,29 @@ export class RegistroAlumnosComponent implements OnInit {
       this.editar = true;
       this.idUser = this.activatedRoute.snapshot.params['id'];
       console.log("ID user: ", this.idUser);
+      // Se espera que this.datos_user ya contenga los datos del alumno.
       this.user = this.datos_user;
+
+      // Si la fecha se recibe como cadena (por ejemplo, "1998-04-15"),
+      // se convierte a objeto Date para el datepicker.
+      if (this.user.fecha_nacimiento && typeof this.user.fecha_nacimiento === 'string') {
+        this.user.fecha_nacimiento = this.parseLocalDate(this.user.fecha_nacimiento);
+      }
     } else {
       this.user = this.alumnoService.esquemaAlumno();
       this.user.rol = this.rol;
     }
-    console.log("Datos iniciales del maestro:", this.user);
+    console.log("Datos iniciales del alumno:", this.user);
   }
 
-  // Mostrar/ocultar contraseña
+  // Función auxiliar que convierte un string "YYYY-MM-DD" a un objeto Date local.
+  private parseLocalDate(dateString: string): Date {
+    const [year, month, day] = dateString.split('-').map(Number);
+    // Recordar que en JavaScript el mes se indexa desde 0
+    return new Date(year, month - 1, day);
+  }
+
+  // Funciones para mostrar/ocultar contraseña
   showPassword(): void {
     if (this.inputType_1 === 'password') {
       this.inputType_1 = 'text';
@@ -67,69 +81,66 @@ export class RegistroAlumnosComponent implements OnInit {
 
   // Redirigir al usuario a otra página
   public regresar(): void {
-    this.router.navigate(['/']); // Redirige a la página principal
+    this.router.navigate(['/']);
   }
 
   public registrar(): void {
-    // 🛠 Convertir la fecha antes de validar
+    // Convertir la fecha antes de validar, en caso de ser un objeto Date.
     if (this.user.fecha_nacimiento instanceof Date) {
-        this.user.fecha_nacimiento = this.user.fecha_nacimiento.toISOString().split('T')[0];
+      this.user.fecha_nacimiento = this.user.fecha_nacimiento.toISOString().split('T')[0];
     }
-
     console.log("Fecha antes de validar:", this.user.fecha_nacimiento);
 
     // Validar el formulario
     this.errors = this.alumnoService.validarAlumno(this.user, this.editar);
-
     if (Object.keys(this.errors).length !== 0) {
-        console.log("Errores encontrados en el formulario:", this.errors);
-        return;
+      console.log("Errores encontrados en el formulario:", this.errors);
+      return;
     }
 
     console.log("Datos preparados para enviar al backend:", this.user);
 
     // Enviar los datos al backend
     this.alumnoService.registrarAlumno(this.user).subscribe(
-        response => {
-            console.log("Registro exitoso:", response);
-            alert("Registro exitoso!");
-            this.router.navigate(['/home']);
-        },
-        error => {
-            console.error("Error al registrar el alumno:", error);
-            this.errors = error.error;
-        }
+      response => {
+        console.log("Registro exitoso:", response);
+        alert("Registro exitoso!");
+        this.router.navigate(['/home']);
+      },
+      error => {
+        console.error("Error al registrar el alumno:", error);
+        this.errors = error.error;
+      }
     );
-}
-
-
-
-
-public actualizar(): void {
-  // Limpiar o inicializar los errores
-  this.errors = [];
-
-  // Validar datos usando el método de alumnos
-  this.errors = this.alumnoService.validarAlumno(this.user, this.editar);
-  if (!$.isEmptyObject(this.errors)) {
-    // Si hay errores, se detiene la ejecución
-    return;
   }
-  console.log("Pasó la validación");
 
-  // Llamar al servicio para editar el alumno
-  this.alumnoService.editarAlumno(this.user).subscribe(
-    response => {
-      alert("Alumno editado correctamente");
-      console.log("Alumno editado: ", response);
-      this.router.navigate(['/home']);
-    },
-    error => {
-      alert("No se pudo editar el alumno");
-      console.error("Error al editar alumno", error);
+  public actualizar(): void {
+    // Convertir la fecha antes de validar, en caso de que se encuentre como objeto Date.
+    if (this.user.fecha_nacimiento instanceof Date) {
+      this.user.fecha_nacimiento = this.user.fecha_nacimiento.toISOString().split('T')[0];
     }
-  );
-}
+    
+    // Limpiar e inicializar errores
+    this.errors = this.alumnoService.validarAlumno(this.user, this.editar);
+    if (!$.isEmptyObject(this.errors)) {
+      // Si hay errores, se detiene la ejecución
+      return;
+    }
+    console.log("Pasó la validación");
+
+    // Llamar al servicio para editar el alumno
+    this.alumnoService.editarAlumno(this.user).subscribe(
+      response => {
+        alert("Alumno editado correctamente");
+        console.log("Alumno editado: ", response);
+        this.router.navigate(['/home']);
+      },
+      error => {
+        alert("No se pudo editar el alumno");
+        console.error("Error al editar alumno", error);
+      }
+    );
+  }
 
   // Permitir solo letras en los campos de texto
   public soloLetras(event: KeyboardEvent): void {

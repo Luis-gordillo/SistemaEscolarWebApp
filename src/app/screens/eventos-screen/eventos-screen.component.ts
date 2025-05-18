@@ -101,7 +101,7 @@ public goEditar(idEvent: number): void {
 }
   public delete(idEvento: number): void {
   const dialogRef = this.dialog.open(EliminarUserModalComponent, {
-    data: { id: idEvento, tipo: "evento" }, // aquí puedes cambiar "tipo" o "rol" según lo que necesites
+    data: { id: idEvento,rol: "evento" }, // aquí puedes cambiar "tipo" o "rol" según lo que necesites
     height: '288px',
     width: '320px',
   });

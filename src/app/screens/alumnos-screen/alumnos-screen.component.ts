@@ -5,6 +5,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { AlumnoService } from 'src/app/services/alumnos.service';
+import { EliminarUserModalComponent } from 'src/app/modals/eliminar-user-modal/eliminar-user-modal.component';
 
 @Component({
   selector: 'app-alumnos-screen',
@@ -106,8 +107,24 @@ export class AlumnosScreenComponent implements OnInit{
         this.router.navigate(["registro-usuarios", "alumno", idUser]);
       }    
   
-    public delete(idUser: number){ }
-      
+public delete(idUser: number): void {
+  const dialogRef = this.dialog.open(EliminarUserModalComponent, {
+    data: { id: idUser, rol: 'alumno' },
+    width: '320px',
+    height: '288px',
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if (result && result.isDelete) {
+      console.log("Alumno eliminado");
+      window.location.reload();
+    } else {
+      alert("Alumno no eliminado");
+      console.log("No se eliminó el alumno");
+    }
+  });
+}
+
 } 
 
 //Esto va fuera de la llave que cierra la clase

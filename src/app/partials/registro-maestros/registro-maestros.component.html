@@ -26,9 +26,9 @@
         </mat-form-field>
         <div *ngIf="errors.last_name" class="invalid-feedback">{{ errors.last_name }}</div>
   
-        <mat-form-field class="mat-input" appearance="outline">
+        <mat-form-field class="mat-input" appearance="outline" >
           <mat-label>Correo electrónico</mat-label>
-          <input matInput [(ngModel)]="user.email" placeholder="Escribe correo electrónico">
+          <input matInput [(ngModel)]="user.email" placeholder="Escribe correo electrónico" [disabled]="editar">
         </mat-form-field>
         <div *ngIf="errors.email" class="invalid-feedback">{{ errors.email }}</div>
   

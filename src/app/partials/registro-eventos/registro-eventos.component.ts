@@ -55,7 +55,7 @@ export class RegistroEventosComponent implements OnInit {
   ) {}
 
 ngOnInit(): void {
-  // ... otras inicializaciones
+  // Inicialización de rol y token
   this.rol = this.facadeService.getUserGroup() || 'admin';
   this.token = this.facadeService.getSessionToken() || '';
 
@@ -64,15 +64,12 @@ ngOnInit(): void {
     const eventId = this.activatedRoute.snapshot.params['id'];
     this.eventosService.getEventoByID(eventId).subscribe(
       response => {
-        // Asigna la respuesta directamente a this.evento.
         this.evento = response;
 
-        // Parseamos la fecha de realización como fecha local usando la función auxiliar
         if (response.fecha_realizacion) {
           this.evento.fecha_realizacion = this.parseLocalDate(response.fecha_realizacion);
         }
 
-        // Transforma el tiempo para que se muestre en formato "HH:mm"
         this.evento.horaInicio = response.horaInicio 
           ? response.horaInicio.substring(0, 5)
           : '';
@@ -80,14 +77,15 @@ ngOnInit(): void {
           ? response.horaFin.substring(0, 5)
           : '';
 
-        // Convertir el responsable a número, si es necesario:
         this.evento.responsable = response.responsable ? Number(response.responsable) : null;
 
-        // Si el público llega como string, conviértelo a arreglo...
+        // Convertir la cadena de "publico_objetivo" a arreglo
         if (response.publico_objetivo) {
-          this.publicoSeleccionado = typeof response.publico_objetivo === 'string'
-            ? [response.publico_objetivo]
-            : response.publico_objetivo;
+          this.publicoSeleccionado =
+            typeof response.publico_objetivo === 'string'
+              ? response.publico_objetivo.split(',').map(item => item.trim())
+              : response.publico_objetivo;
+          // Asignamos el arreglo al objeto de evento
           this.evento.publico = this.publicoSeleccionado;
         }
       },
@@ -96,12 +94,27 @@ ngOnInit(): void {
       }
     );
   } else {
-    // Lógica para modo registro (nuevo evento)
+    // Inicialización del objeto para un nuevo evento
+    this.evento = {
+      nombre: '',
+      fecha_realizacion: '',
+      descripcion: '',
+      horaInicio: '',
+      horaFin: '',
+      cupoAsistentes: '',
+      lugar: '',
+      programaEducativo: '',
+      publico: [],
+      responsable: null,
+      tipo: ''
+    };
   }
   
-  // Cargar responsables u otras inicializaciones
+  // Cargar otros datos, por ejemplo, la lista de responsables
   this.cargarResponsables();
 }
+
+
 
 // Función auxiliar para convertir una cadena "YYYY-MM-DD" en un objeto Date local
 private parseLocalDate(dateString: string): Date {
@@ -112,15 +125,15 @@ private parseLocalDate(dateString: string): Date {
 
 
 
-  validarFechaRealizacion() {
-    if (!this.evento.fecha_realizacion) {
-      this.errors.fecha_realizacion = "Debes seleccionar una fecha de realización.";
-    } else if (new Date(this.evento.fecha_realizacion) < this.fechaActual) {
-      this.errors.fecha_realizacion = "No puedes seleccionar una fecha anterior al día actual.";
-    } else {
-      delete this.errors.fecha_realizacion;
-    }
+validarFechaRealizacion() {
+  if (!this.evento.fecha_realizacion) {
+    this.errors.fecha_realizacion = "Debes seleccionar una fecha de realización.";
+  } else if (new Date(this.evento.fecha_realizacion) < this.fechaActual) {
+    this.errors.fecha_realizacion = "No puedes seleccionar una fecha anterior al día actual.";
+  } else {
+    delete this.errors.fecha_realizacion;
   }
+}
 
 guardarHorario() {
   this.errors = {}; // Limpia errores previos
@@ -134,7 +147,7 @@ guardarHorario() {
   }
   
   if (horaInicio && horaFin) {
-    // Agregar validación para evitar error si horaInicio o horaFin son undefined:
+    // Convertir de formato 12h a 24h si se detecta AM/PM
     if ((horaInicio && horaInicio.toUpperCase && horaInicio.toUpperCase().includes('AM')) ||
         (horaInicio && horaInicio.toUpperCase && horaInicio.toUpperCase().includes('PM'))) {
       horaInicio = this.convertTime12to24(horaInicio);
@@ -168,24 +181,15 @@ private formatDate(date: Date): string {
 }
 
 private convertTime12to24(time12h: string): string {
-  // Si no se recibe ningún valor, retorna cadena vacía
-  if (!time12h) {
-    return '';
-  }
+  if (!time12h) { return ''; }
   
-  // Separar la cadena por espacios; si no tenemos dos partes (tiempo y modificador), retorna el valor
   const parts = time12h.trim().split(' ');
-  if (parts.length < 2) {
-    return time12h;
-  }
+  if (parts.length < 2) { return time12h; }
   
   const [time, modifier] = parts;
   let [hours, minutes] = time.split(':');
 
-  // Asegurarse de que modifier esté definido
-  if (!modifier) {
-    return time12h;
-  }
+  if (!modifier) { return time12h; }
 
   if (modifier.toUpperCase() === 'PM' && hours !== '12') {
     hours = String(parseInt(hours, 10) + 12);
@@ -199,37 +203,31 @@ private convertTime12to24(time12h: string): string {
 
 
 public registrar() {
-  // Primero, valida la fecha y el horario
   this.validarFechaRealizacion();
   this.guardarHorario();
 
-  // Sólo si no hay errores en la validación
   if (Object.keys(this.errors).length === 0) {
-    // Prepara el payload final
     const payload: any = {
       nombre: this.evento.nombre,
-      // Si fecha_realizacion es un objeto Date, conviértelo:
       fecha_realizacion: this.evento.fecha_realizacion instanceof Date
         ? this.formatDate(this.evento.fecha_realizacion)
         : this.evento.fecha_realizacion,
       descripcion: this.evento.descripcion,
-      // Usa las propiedades ya convertidas o definidas:
       hora_inicio: this.evento.hora_inicio || this.evento.horaInicio || '',
       hora_fin: this.evento.hora_fin || this.evento.horaFin || '',
       cupo_asistentes: this.evento.cupoAsistentes,
       lugar: this.evento.lugar,
       programa_educativo: this.evento.programaEducativo,
-      // El backend espera "publico_objetivo"
-      publico_objetivo: this.evento.publico,  // o this.evento.publico_objetivo si ya la asignaste
+      publico_objetivo: this.evento.publico, // Tal como lo manejamos en el onPublicoChange
       responsable: this.evento.responsable,
-      tipo: this.evento.tipo  // O, si usas otro campo, actualízalo acá
+      tipo: this.evento.tipo
     };
 
     console.log("Payload a enviar:", payload);
-    // Llama al servicio con el payload preparado
     this.eventosService.registrarEvento(payload).subscribe(
       response => {
         console.log("Evento registrado:", response);
+        this.router.navigate(['/home']);
       },
       error => {
         console.log("Error al registrar el evento:", error);
@@ -240,22 +238,25 @@ public registrar() {
   }
 }
 
-  public onPublicoChange(event: any): void {
-    const opcion = event.source.value;
-    if (event.checked) {
-      if (!this.publicoSeleccionado.includes(opcion)) {
-        this.publicoSeleccionado.push(opcion);
-      }
-    } else {
-      this.publicoSeleccionado = this.publicoSeleccionado.filter(item => item !== opcion);
-    }
-    this.evento.publico = this.publicoSeleccionado;
-    console.log("Público seleccionado:", this.publicoSeleccionado);
-  }
 
-  public isPublicoSelected(opcion: string): boolean {
-    return this.publicoSeleccionado.includes(opcion);
+public onPublicoChange(event: any): void {
+  const opcion = event.source.value;
+  if (event.checked) {
+    if (!this.publicoSeleccionado.includes(opcion)) {
+      this.publicoSeleccionado.push(opcion);
+    }
+  } else {
+    this.publicoSeleccionado = this.publicoSeleccionado.filter(item => item !== opcion);
   }
+  // Actualizamos el modelo del evento
+  this.evento.publico = this.publicoSeleccionado;
+  console.log("Público seleccionado:", this.publicoSeleccionado);
+}
+
+public isPublicoSelected(opcion: string): boolean {
+  return this.publicoSeleccionado.includes(opcion);
+}
+
 
   public validarDescripcion(event: KeyboardEvent): void {
     if (event.key.length > 1) {
@@ -286,7 +287,6 @@ public registrar() {
 
 
 public actualizar(): void {
-  // Se validan la fecha y el horario, tal como se hace en registrar()
   this.validarFechaRealizacion();
   this.guardarHorario();
 
@@ -295,12 +295,9 @@ public actualizar(): void {
     return;
   }
 
-  console.log("Pasó la validación del evento", this.evento);
-
-  // Aseguramos que la fecha se envíe en formato YYYY-MM-DD:
+  // Conversión de la fecha al formato deseado
   let fechaEnvio: string = '';
   if (this.evento.fecha_realizacion) {
-    // Si la fecha es un objeto Date, se aplica el formateo; de lo contrario, se intenta parsear como Date local
     if (this.evento.fecha_realizacion instanceof Date) {
       fechaEnvio = this.formatDate(this.evento.fecha_realizacion);
     } else {
@@ -309,26 +306,23 @@ public actualizar(): void {
     }
   }
 
-  // Para las horas, usamos la propiedad ya asignada por guardarHorario().
-  // Notar que el backend espera las claves en camelCase: "horaInicio" y "horaFin"
   const horaInicioFinal = this.evento.hora_inicio || this.evento.horaInicio || '';
   const horaFinFinal = this.evento.hora_fin || this.evento.horaFin || '';
 
-  // Para "publico_objetivo", si el valor es un array (posiblemente anidado) lo aplanamos y unimos por comas.
+  // Convertir el arreglo de público a una cadena separada por comas
   let publicoFinal: string = '';
   if (Array.isArray(this.evento.publico)) {
-    // Si es un array anidado, lo aplanamos (por ejemplo, [["Estudiantes"]])
-    publicoFinal = this.evento.publico.flat().join(',');
+    publicoFinal = this.evento.publico.join(',');
   } else {
     publicoFinal = this.evento.publico;
   }
 
   const payload: any = {
-    id: this.evento.id,  // Campo necesario para la actualización
+    id: this.evento.id,
     nombre: this.evento.nombre,
     fecha_realizacion: fechaEnvio,
     descripcion: this.evento.descripcion,
-    horaInicio: horaInicioFinal,  // Enviamos con clave camelCase
+    horaInicio: horaInicioFinal,
     horaFin: horaFinFinal,
     cupoAsistentes: this.evento.cupoAsistentes,
     lugar: this.evento.lugar,
@@ -339,19 +333,17 @@ public actualizar(): void {
   };
 
   console.log("Payload a enviar:", payload);
-
   this.eventosService.editarEvento(payload).subscribe(
     response => {
-      alert("Evento editado correctamente");
-      console.log("Evento editado:", response);
+      console.log("Evento actualizado:", response);
       this.router.navigate(['/home']);
     },
     error => {
-      alert("No se pudo editar el evento");
-      console.error("Error al editar evento", error);
+      console.log("Error al actualizar el evento:", error);
     }
   );
 }
+
 
 
 
@@ -391,13 +383,6 @@ private cargarResponsables(): void {
       alert("No se pudo cargar la lista de responsables");
     }
   );
-}
-
-private formatLocalDate(date: Date): string {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  return `${year}-${month}-${day}`;
 }
 
 

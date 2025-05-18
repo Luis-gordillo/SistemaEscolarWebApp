@@ -128,12 +128,16 @@ public registrarAlumno (data: any): Observable <any>{
   return this.http.post<any>(`${environment.url_api}/alumnos/`,data, httpOptions);
 }
 
-//Eliminar Alumno
-public eliminarAlumno(idUser: number): Observable <any>{
-  var token = this.facadeService.getSessionToken();
-  var headers = new HttpHeaders({ 'Content-Type': 'application/json' , 'Authorization': 'Bearer '+token});
-  return this.http.delete<any>(`${environment.url_api}/alumnos-edit/?id=${idUser}`,{headers:headers});
+public eliminarAlumno(idUser: number): Observable<any> {
+  const token = this.facadeService.getSessionToken();
+  const headers = new HttpHeaders({
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + token
+  });
+  // Nota el cambio: se elimina el query parameter y se pone el ID en la URL.
+  return this.http.delete<any>(`${environment.url_api}/alumnos-edit/${idUser}/`, { headers: headers });
 }
+
 
  public obtenerListaAlumnos (): Observable <any>{
     var token = this.facadeService.getSessionToken();
